@@ -1,0 +1,313 @@
+:root {
+    /* Light theme variables (default) */
+    --bg-color: rgba(255, 255, 255, 0.3);
+    --panel-bg: rgba(255, 255, 255, 0.15);
+    --text-color: #000;
+    --button-bg: rgba(255, 255, 255, 0.25);
+    --button-hover: rgba(255, 255, 255, 0.4);
+    --accent-color: #00c6ff;
+    --danger-color: #e63946;
+    --glass-border: 1px solid rgba(255, 255, 255, 0.25);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark theme variables, applied when body has 'dark-theme' class */
+body.dark-theme {
+    --bg-color: rgba(0, 0, 0, 0.4);
+    --panel-bg: rgba(30, 30, 30, 0.4);
+    --text-color: #fff;
+    --button-bg: rgba(255, 255, 255, 0.1);
+    --button-hover: rgba(255, 255, 255, 0.25);
+    --accent-color: #00f5d4;
+    --danger-color: #ff6b6b;
+    --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Universal box-sizing for consistent layout */
+* {
+    box-sizing: border-box;
+}
+
+/* Body styling for centering the calculator and setting base font/background */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #dceeff, #f4f4f4);
+    color: var(--text-color); /* Uses CSS variable for text color */
+    transition: all 0.4s ease; /* Smooth transition for theme changes */
+    display: flex; /* Flexbox for centering content */
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Full viewport height */
+}
+
+/* Dark theme background for the body */
+body.dark-theme {
+    background: linear-gradient(135deg, #1f1f2e, #2c2c3e);
+}
+
+/* Main calculator container styling */
+.calculator-container {
+    max-width: 400px; /* Initial max-width for simple calculator mode */
+    width: 100%; /* Ensures responsiveness */
+    background: var(--panel-bg); /* Uses CSS variable for panel background */
+    backdrop-filter: blur(12px); /* Glassmorphism effect */
+    border: var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 25px 20px;
+    transition: background 0.4s ease, color 0.4s ease, max-width 0.4s ease; /* Transitions for theme and width changes */
+    display: flex;
+    flex-direction: column; /* Stacks inner elements vertically */
+    align-items: center; /* Centers inner elements horizontally */
+    overflow: hidden; /* Hides content that exceeds boundaries during transitions */
+}
+
+/* Class added by JS when scientific mode is active to expand the container */
+.calculator-container.show-scientific-mode {
+    max-width: 680px; /* Adjusted width to accommodate scientific buttons side-by-side */
+    /* This value might need fine-tuning based on your exact button sizes and gaps.
+       (e.g., simple_width + gap + scientific_width + 2*padding)
+       (approx 250px + 15px + 250px + 40px padding = 555px minimum, 680px allows breathing room) */
+}
+
+/* Wrapper for the calculator's core functionality (display, buttons, history) */
+.calculator {
+    display: flex;
+    flex-direction: column; /* Stacks display, buttons-wrapper, and history vertically */
+    align-items: center; /* Centers them horizontally within this div */
+    width: 100%; /* Takes full available width */
+}
+
+/* Display (input field) styling */
+#display {
+    width: 100%; /* Takes full width within its parent */
+    padding: 20px;
+    font-size: 28px;
+    text-align: right;
+    background: var(--button-bg); /* Uses CSS variable for button background */
+    color: var(--text-color); /* Uses CSS variable for text color */
+    border: none;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(5px);
+}
+
+/* Wrapper for simple and scientific button sections to enable side-by-side layout */
+.buttons-wrapper {
+    display: flex; /* Flex container for horizontal arrangement */
+    flex-direction: row; /* Arranges children in a row (simple and scientific buttons) */
+    gap: 15px; /* Space between the simple and scientific sections */
+    justify-content: center; /* Centers the button sections if they don't fill the width */
+    align-items: flex-start; /* Aligns their tops */
+    width: 100%; /* Takes full width of its parent (.calculator) */
+    margin-top: 15px; /* Space from the display */
+    margin-bottom: 15px; /* Space before the history section */
+    overflow: hidden; /* Important for the horizontal collapse animation of scientific buttons */
+}
+
+/* Styles for the simple calculator buttons container (the 4x4 grid) */
+.simple-buttons { 
+    display: grid; /* Enables CSS Grid layout */
+    grid-template-columns: repeat(4, 1fr); /* Creates 4 columns of equal width */
+    gap: 10px; /* Space between buttons */
+    flex-basis: 250px; /* Fixed width for the simple calculator part */
+    flex-shrink: 0; /* Prevents the simple calculator section from shrinking */
+}
+
+/* Common button styles for both simple and scientific buttons */
+.simple-buttons button,
+.scientific-buttons button { 
+    flex: 1 0 22%; /* Old flex rule, grid is dominant now for .simple-buttons */
+    padding: 15px;
+    font-size: 18px;
+    background: var(--button-bg);
+    color: var(--text-color);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, background 0.3s ease;
+    cursor: pointer;
+}
+
+/* Hover effects for all buttons */
+.simple-buttons button:hover,
+.scientific-buttons button:hover {
+    transform: scale(1.05); /* Slight scale up on hover */
+    background: var(--button-hover); /* Changes background on hover */
+}
+
+/* Specific styling for 'Clear' and 'Backspace' buttons */
+.clear,
+.buttons button[title="backspace"] {
+    background-color: var(--danger-color); /* Red background for clear/back */
+    color: white; /* White text for these buttons */
+}
+/* Optional: specific styling for the equals button if desired */
+.simple-buttons button[onclick="calculate()"] {
+    background-color: var(--accent-color); /* Example accent color for equals */
+    color: white;
+}
+
+
+/* Toggle group styling (for light/dark and simple/scientific switches) */
+.toggle-group,
+.toggles {
+    display: flex;
+    justify-content: space-between; /* Spreads items horizontally */
+    align-items: center; /* Centers items vertically */
+    margin-bottom: 15px;
+    width: 100%; /* Ensures toggles span full width of their parent */
+    padding: 0 5px; /* Small horizontal padding to keep them off the edge */
+    box-sizing: border-box; /* Include padding in the width calculation */
+}
+
+/* Styling for the custom switch component */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0; /* Hide the default checkbox */
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3); /* Background of the slider track */
+    transition: 0.4s;
+    border-radius: 24px; /* Makes the slider rounded */
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white; /* Color of the toggle "thumb" */
+    transition: 0.4s;
+    border-radius: 50%; /* Makes the thumb circular */
+}
+
+/* Style when the checkbox is checked */
+input:checked + .slider {
+    background-color: var(--accent-color); /* Changes track color when checked */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px); /* Moves the thumb to the right when checked */
+}
+
+/* Scientific buttons - Initial state (hidden and collapsed horizontally) */
+.scientific-buttons {
+    display: grid; /* Always a grid, even when hidden, just collapsed */
+    grid-template-columns: repeat(3, 1fr); /* 3 columns for scientific buttons */
+    gap: 10px; /* Space between scientific buttons */
+
+    opacity: 0; /* Makes them transparent */
+    max-width: 0; /* Collapses them horizontally to 0 width */
+    overflow: hidden; /* Hides content that would otherwise overflow during collapse */
+    transform: translateX(-20px); /* Starts them slightly off-screen to the left for animation */
+
+    /* Transitions for smooth horizontal movement and fading */
+    transition: opacity 0.4s ease, max-width 0.4s ease, transform 0.4s ease;
+
+    flex-grow: 0; /* Prevents them from growing when hidden */
+    flex-shrink: 0; /* Prevents them from shrinking excessively when hidden */
+    flex-basis: auto; /* Default flex-basis */
+
+    /* Optional: Add background/padding if you want the scientific pad visually distinct */
+    /* background: var(--button-bg); */
+    /* border-radius: 12px; */
+    /* padding: 15px; */
+}
+
+/* Scientific buttons - Visible state (expands horizontally) */
+.scientific-buttons.show {
+    opacity: 1; /* Fully visible */
+    max-width: 250px; /* Expands to a max width suitable for 3 columns (adjust as needed) */
+    transform: translateX(0); /* Moves them into view */
+    flex-grow: 1; /* Allows them to grow and take available space when shown */
+    flex-shrink: 1; /* Allows them to shrink if needed when shown */
+}
+
+/* History section styling */
+.history {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--button-bg);
+    border-radius: 12px;
+    color: var(--text-color);
+    font-size: 14px;
+    width: 100%; /* Ensures history takes full width of its parent */
+}
+
+.history h3 {
+    margin-bottom: 10px;
+}
+
+/* History list styling */
+#history-list {
+    list-style: none; /* Removes bullet points */
+    padding: 0;
+    max-height: 150px; /* Limits height, enables scrolling */
+    overflow-y: auto; /* Adds scrollbar if content overflows vertically */
+}
+
+/* Individual history item styling */
+#history-list li {
+    padding: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Separator between items */
+    cursor: pointer; /* Indicates it's clickable */
+}
+
+/* Responsive adjustments for smaller screens (max-width: 500px) */
+@media (max-width: 500px) {
+    /* Adjust container width for smaller screens when scientific mode is on */
+    .calculator-container.show-scientific-mode {
+        max-width: 90vw; /* Use viewport width to be more adaptable */
+    }
+    /* Stack simple and scientific buttons vertically on small screens */
+    .buttons-wrapper {
+        flex-direction: column; /* Change to column layout */
+        gap: 10px; /* Adjust gap */
+    }
+    /* Ensure both button sections take full width when stacked vertically */
+    .simple-buttons,
+    .scientific-buttons {
+        flex-basis: auto; /* Remove fixed flex-basis */
+        width: 100%; /* Take full width */
+        max-width: none; /* Remove max-width constraint */
+        opacity: 1; /* Ensure visible (no fading effect if stacked) */
+        transform: none; /* Remove transform (no sliding effect if stacked) */
+    }
+    /* Remove max-width constraint specifically for scientific buttons in show state */
+    .scientific-buttons.show {
+         max-width: none;
+    }
+
+    /* Adjust button sizes for smaller screens */
+    .simple-buttons button,
+    .scientific-buttons button {
+        flex: 1 0 21%; /* Adjust flex-basis for smaller buttons */
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    /* Adjust display font size for smaller screens */
+    #display {
+        font-size: 22px;
+        padding: 15px;
+    }
+}
