@@ -1,11 +1,92 @@
 const display = document.getElementById('display');
 const themeToggle = document.getElementById('theme-toggle');
-const sciToggle = document.getElementById('mode-toggle'); // SciToggle is the checkbox for toggling simple/scientific mode.
-const scientificButtons = document.getElementById('scientific'); // ScientificButtons refers to the container div for scientific buttons.
+const sciToggle = document.getElementById('mode-toggle');
+const scientificButtons = document.getElementById('scientific');
 const historylist = document.getElementById('history-list');
-const calculatorContainer = document.querySelector('.calculator-container'); // CalculatorContainer refers to the main wrapper div for the entire calculator UI.
+const calculatorContainer = document.querySelector('.calculator-container');
 
-let currentExpression = ''; // Variable to store the current expression being built on the display.
+let currentExpression = '';
+
+// --- Mathematical Expression Parser (Safer than eval) ---
+
+function safeEvaluate(expression) {
+    // Remove spaces
+    expression = expression.replace(/\s+/g, '');
+    
+    // Replace mathematical constants and functions
+    expression = expression.replace(/π/g, Math.PI);
+    expression = expression.replace(/e(?![a-z])/g, Math.E); // e not followed by letters
+    expression = expression.replace(/\^/g, '**');
+    
+    // Handle functions - more robust pattern matching
+    expression = expression.replace(/sin\(/g, 'Math.sin(');
+    expression = expression.replace(/cos\(/g, 'Math.cos(');
+    expression = expression.replace(/tan\(/g, 'Math.tan(');
+    expression = expression.replace(/sqrt\(/g, 'Math.sqrt(');
+    expression = expression.replace(/log\(/g, 'Math.log10(');
+    expression = expression.replace(/ln\(/g, 'Math.log(');
+    expression = expression.replace(/exp\(/g, 'Math.exp(');
+    
+    // Validate the expression before evaluation
+    if (!isValidExpression(expression)) {
+        throw new Error('Invalid expression');
+    }
+    
+    // Check for balanced parentheses
+    if (!hasBalancedParentheses(expression)) {
+        throw new Error('Unbalanced parentheses');
+    }
+    
+    try {
+        // Use Function constructor instead of eval for better security
+        const result = new Function('return ' + expression)();
+        
+        // Check for invalid results
+        if (!isFinite(result)) {
+            throw new Error('Mathematical error');
+        }
+        
+        return result;
+    } catch (error) {
+        throw new Error('Invalid calculation');
+    }
+}
+
+function isValidExpression(expr) {
+    // More comprehensive validation
+    const allowedPattern = /^[\d\.\+\-\*\/\(\)Math\.\w\s]+$/;
+    
+    // Check basic pattern
+    if (!allowedPattern.test(expr)) {
+        return false;
+    }
+    
+    // Check for dangerous patterns
+    const dangerousPatterns = [
+        /\b(document|window|alert|prompt|confirm|eval|Function|setTimeout|setInterval)\b/,
+        /\b(location|href|cookie|localStorage|sessionStorage)\b/,
+        /[<>]/,
+        /\b(script|iframe|object|embed)\b/i
+    ];
+    
+    for (const pattern of dangerousPatterns) {
+        if (pattern.test(expr)) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+function hasBalancedParentheses(expr) {
+    let count = 0;
+    for (let char of expr) {
+        if (char === '(') count++;
+        if (char === ')') count--;
+        if (count < 0) return false;
+    }
+    return count === 0;
+}
 
 // --- Basic Calculator Functions ---
 
@@ -18,12 +99,6 @@ function press(value) {
     currentExpression += value;
 }
 
-function isValidExpression(expr) {
-    const safePattern = /^[\d\.\+\-\*\/\(\)MathPIESinCosTanLogExpSqrt]*$/;
-    return safePattern.test(expr);
-}
-
-    
 function clearDisplay() {
     display.value = '';
     currentExpression = '';
@@ -36,44 +111,30 @@ function backspace() {
 
 function calculate() {
     try {
-       let expression = currentExpression;
-
-        // Replace symbols/keywords with JavaScript equivalents
-        expression = expression.replace(/π/g, 'Math(.PI');
-        expression = expression.replace(/e/g, 'Math.E');
-        expression = expression.replace(/√/g, 'Math.sqrt');
-        expression = expression.replace(/sin/g, 'Math.sin');
-        expression = expression.replace(/cos/g, 'Math.cos');
-        expression = expression.replace(/tan/g, 'Math.tan');
-        expression = expression.replace(/\^/g, '**');
-        expression = expression.replace(/log\(/g, 'Math.log10(');
-        expression = expression.replace(/ln\(/g, 'Math.log(');
-        expression = expression.replace(/exp\(/g, 'Math.exp(');
-
-        if(!isValidExpression(expression)){
-            throw new Error("Invalid characters in expression");
-        }
-         console.log("Expression to evaluate:", expression);
-        let result = eval(expression);
-
-        if (typeof result === "number" && !Number.isInteger(result)) {
-            result = parseFloat(result.toFixed(6));
+        if (!currentExpression.trim()) {
+            return;
         }
 
-        display.value = result;
-        addtohistory(expression, result);
-        currentExpression = result.toString();
+        const result = safeEvaluate(currentExpression);
+        
+        // Round to 10 decimal places to avoid floating point issues
+        const roundedResult = Math.round(result * 10000000000) / 10000000000;
+        
+        display.value = roundedResult;
+        addtohistory(currentExpression, roundedResult);
+        currentExpression = roundedResult.toString();
 
-    } catch (e) {
+    } catch (error) {
         display.value = "Error";
         currentExpression = '';
-        console.error("Calculation error:", e.message);
+        console.error("Calculation error:", error.message);
     }
 }
 
 function scientificFunc(funcName) {
     if (display.value === "Error") {
         display.value = '';
+        currentExpression = '';
     }
 
     const val = parseFloat(display.value);
@@ -85,26 +146,53 @@ function scientificFunc(funcName) {
         return;
     }
 
-    switch (funcName) {
-        case 'sin': result = Math.sin(val * Math.PI / 180); break;
-        case 'cos': result = Math.cos(val * Math.PI / 180); break;
-        case 'tan': result = Math.tan(val * Math.PI / 180); break;
-        case 'sqrt': result = Math.sqrt(val); break;
-        case 'log': result = Math.log10(val); break;
-        case 'ln': result = Math.log(val); break;
-        case 'exp': result = Math.exp(val); break;
-        default:
-            display.value = "Error";
-            return;
-    }
+    try {
+        switch (funcName) {
+            case 'sin': 
+                result = Math.sin(val * Math.PI / 180); 
+                break;
+            case 'cos': 
+                result = Math.cos(val * Math.PI / 180); 
+                break;
+            case 'tan': 
+                result = Math.tan(val * Math.PI / 180); 
+                break;
+            case 'sqrt': 
+                if (val < 0) throw new Error('Square root of negative number');
+                result = Math.sqrt(val); 
+                break;
+            case 'log': 
+                if (val <= 0) throw new Error('Logarithm of non-positive number');
+                result = Math.log10(val); 
+                break;
+            case 'ln': 
+                if (val <= 0) throw new Error('Natural logarithm of non-positive number');
+                result = Math.log(val); 
+                break;
+            case 'exp': 
+                result = Math.exp(val); 
+                break;
+            default:
+                throw new Error('Unknown function');
+        }
 
-    if (typeof result === "number" && !Number.isInteger(result)) {
-        result = parseFloat(result.toFixed(6));
-    }
+        // Check for invalid results
+        if (!isFinite(result)) {
+            throw new Error('Mathematical error');
+        }
 
-    display.value = result;
-    currentExpression = result.toString();
-    addtohistory(`${funcName}(${val})`, result);
+        // Round to avoid floating point issues
+        result = Math.round(result * 10000000000) / 10000000000;
+
+        display.value = result;
+        currentExpression = result.toString();
+        addtohistory(`${funcName}(${val})`, result);
+        
+    } catch (error) {
+        display.value = "Error";
+        currentExpression = '';
+        console.error("Scientific function error:", error.message);
+    }
 }
 
 // --- History Functions ---
@@ -117,6 +205,11 @@ function addtohistory(expression, result) {
         currentExpression = result.toString();
     });
     historylist.prepend(li);
+    
+    // Limit history to 20 items
+    if (historylist.children.length > 20) {
+        historylist.removeChild(historylist.lastChild);
+    }
 }
 
 function clearHistory() {
@@ -147,10 +240,11 @@ function calculatePercentage() {
 
     let currentValue = parseFloat(display.value);
     if (!isNaN(currentValue)) {
+        const originalValue = currentValue;
         currentValue /= 100;
         display.value = currentValue;
         currentExpression = currentValue.toString();
-         addtohistory(`${currentValue * 100}%`, currentValue);
+        addtohistory(`${originalValue}%`, currentValue);
     }
 }
 
@@ -180,39 +274,41 @@ window.addEventListener("DOMContentLoaded", () => {
 document.addEventListener('keydown', (e) => {
     const key = e.key;
 
+    // Prevent default behavior for calculator keys
+    if ("0123456789+-*/.()%".includes(key) || key === 'Enter' || key === 'Escape' || key === 'Backspace') {
+        e.preventDefault();
+    }
+
     if (!isNaN(key) || "+-*/().".includes(key)) {
         press(key);
     } else if (key === 'Enter') {
-        e.preventDefault();
         calculate();
     } else if (key === 'Backspace') {
         backspace();
     } else if (key === 'Escape') {
         clearDisplay();
     } else if (key === '%') {
-        e.preventDefault();
         calculatePercentage();
     }
 
-    const map = {
-        l: "log(",
-        s: "sin(",
-        c: "cos(",
-        t: "tan(",
-        r: "sqrt(",
-        p: "π",
-        e: "e",
-        n: "ln(",
-        x: "exp(",
-        '^': '^',
-        '(': '(',
-        ')': ')'
-    };
+    // Function key mappings (only when not using Ctrl/Cmd)
+    if (!e.ctrlKey && !e.metaKey) {
+        const functionMap = {
+            's': () => press('sin('),
+            'c': () => press('cos('),
+            't': () => press('tan('),
+            'r': () => press('sqrt('),
+            'l': () => press('log('),
+            'n': () => press('ln('),
+            'x': () => press('exp('),
+            'p': () => press('π'),
+            'e': () => press('e'),
+            '^': () => press('^')
+        };
 
-    if (e.ctrlKey || e.metaKey) return;
-
-    if (map[key]) {
-        e.preventDefault();
-        press(map[key]);
+        if (functionMap[key.toLowerCase()]) {
+            e.preventDefault();
+            functionMap[key.toLowerCase()]();
+        }
     }
 });
