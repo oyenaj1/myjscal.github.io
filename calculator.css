@@ -2,169 +2,149 @@
     /* Light theme variables (default) */
     --bg-color: rgba(255, 255, 255, 0.3);
     --panel-bg: rgba(255, 255, 255, 0.15);
-    --text-color: #000;
+    --text-color: #4339394a;
     --button-bg: rgba(255, 255, 255, 0.25);
     --button-hover: rgba(255, 255, 255, 0.4);
+    --button-active: rgba(255, 255, 255, 0.6);
     --accent-color: #00c6ff;
     --danger-color: #e63946;
+    --success-color: #2d6a4f;
     --glass-border: 1px solid rgba(255, 255, 255, 0.25);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark theme variables, applied when body has 'dark-theme' class */
+/* Dark theme variables */
 body.dark-theme {
     --bg-color: rgba(0, 0, 0, 0.4);
     --panel-bg: rgba(30, 30, 30, 0.4);
-    --text-color: #fff;
+    --text-color: #e8e8e8;
     --button-bg: rgba(255, 255, 255, 0.1);
-    --button-hover: rgba(255, 255, 255, 0.25);
+    --button-hover: rgba(255, 255, 255, 0.2);
+    --button-active: rgba(255, 255, 255, 0.3);
     --accent-color: #00f5d4;
     --danger-color: #ff6b6b;
+    --success-color: #51cf66;
     --glass-border: 1px solid rgba(255, 255, 255, 0.2);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* Universal box-sizing for consistent layout */
-* {
+/* Universal box-sizing and smooth scrolling */
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
-/* Body styling for centering the calculator and setting base font/background */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Body styling */
 body {
     margin: 0;
     padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #dceeff, #f4f4f4);
-    color: var(--text-color); /* Uses CSS variable for text color */
-    transition: all 0.4s ease; /* Smooth transition for theme changes */
-    display: flex; /* Flexbox for centering content */
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-weight: 400;
+    line-height: 1.5;
+    background: linear-gradient(135deg, #dceeff 0%, #f4f4f4 100%);
+    color: var(--text-color);
+    transition: var(--transition);
+    display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Full viewport height */
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* Dark theme background for the body */
+/* Dark theme background */
 body.dark-theme {
-    background: linear-gradient(135deg, #1f1f2e, #2c2c3e);
+    background: linear-gradient(135deg, #1f1f2e 0%, #2c2c3e 100%);
 }
 
-/* Main calculator container styling */
+/* Main calculator container */
 .calculator-container {
-    max-width: 400px; /* Initial max-width for simple calculator mode */
-    width: 100%; /* Ensures responsiveness */
-    background: var(--panel-bg); /* Uses CSS variable for panel background */
-    backdrop-filter: blur(12px); /* Glassmorphism effect */
+    max-width: 400px;
+    width: 100%;
+    background: var(--panel-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border: var(--glass-border);
     border-radius: 20px;
     box-shadow: var(--shadow);
     padding: 25px 20px;
-    transition: background 0.4s ease, color 0.4s ease, max-width 0.4s ease; /* Transitions for theme and width changes */
+    transition: var(--transition), max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
-    flex-direction: column; /* Stacks inner elements vertically */
-    align-items: center; /* Centers inner elements horizontally */
-    overflow: hidden; /* Hides content that exceeds boundaries during transitions */
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
 }
 
-/* Class added by JS when scientific mode is active to expand the container */
+.calculator-container:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+/* Scientific mode expanded container */
 .calculator-container.show-scientific-mode {
-    max-width: 680px; /* Adjusted width to accommodate scientific buttons side-by-side */
-    /* This value might need fine-tuning based on your exact button sizes and gaps.
-       (e.g., simple_width + gap + scientific_width + 2*padding)
-       (approx 250px + 15px + 250px + 40px padding = 555px minimum, 680px allows breathing room) */
+    max-width: 680px;
 }
 
-/* Wrapper for the calculator's core functionality (display, buttons, history) */
+/* Calculator wrapper */
 .calculator {
     display: flex;
-    flex-direction: column; /* Stacks display, buttons-wrapper, and history vertically */
-    align-items: center; /* Centers them horizontally within this div */
-    width: 100%; /* Takes full available width */
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
-/* Display (input field) styling */
+/* Display styling */
 #display {
-    width: 100%; /* Takes full width within its parent */
+    width: 100%;
     padding: 20px;
     font-size: 28px;
+    font-weight: 300;
     text-align: right;
-    background: var(--button-bg); /* Uses CSS variable for button background */
-    color: var(--text-color); /* Uses CSS variable for text color */
-    border: none;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(5px);
-}
-
-/* Wrapper for simple and scientific button sections to enable side-by-side layout */
-.buttons-wrapper {
-    display: flex; /* Flex container for horizontal arrangement */
-    flex-direction: row; /* Arranges children in a row (simple and scientific buttons) */
-    gap: 15px; /* Space between the simple and scientific sections */
-    justify-content: center; /* Centers the button sections if they don't fill the width */
-    align-items: flex-start; /* Aligns their tops */
-    width: 100%; /* Takes full width of its parent (.calculator) */
-    margin-top: 15px; /* Space from the display */
-    margin-bottom: 15px; /* Space before the history section */
-    overflow: hidden; /* Important for the horizontal collapse animation of scientific buttons */
-}
-
-/* Styles for the simple calculator buttons container (the 4x4 grid) */
-.simple-buttons { 
-    display: grid; /* Enables CSS Grid layout */
-    grid-template-columns: repeat(4, 1fr); /* Creates 4 columns of equal width */
-    gap: 10px; /* Space between buttons */
-    flex-basis: 250px; /* Fixed width for the simple calculator part */
-    flex-shrink: 0; /* Prevents the simple calculator section from shrinking */
-}
-
-/* Common button styles for both simple and scientific buttons */
-.simple-buttons button,
-.scientific-buttons button { 
-    flex: 1 0 22%; /* Old flex rule, grid is dominant now for .simple-buttons */
-    padding: 15px;
-    font-size: 18px;
     background: var(--button-bg);
     color: var(--text-color);
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, background 0.3s ease;
-    cursor: pointer;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: var(--transition);
+    font-family: 'Segoe UI', cursive;
+    letter-spacing: 0.5px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Hover effects for all buttons */
-.simple-buttons button:hover,
-.scientific-buttons button:hover {
-    transform: scale(1.05); /* Slight scale up on hover */
-    background: var(--button-hover); /* Changes background on hover */
+#display:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
-/* Specific styling for 'Clear' and 'Backspace' buttons */
-.clear,
-.buttons button[title="backspace"] {
-    background-color: var(--danger-color); /* Red background for clear/back */
-    color: white; /* White text for these buttons */
-}
-/* Optional: specific styling for the equals button if desired */
-.simple-buttons button[onclick="calculate()"] {
-    background-color: var(--accent-color); /* Example accent color for equals */
-    color: white;
-}
-
-
-/* Toggle group styling (for light/dark and simple/scientific switches) */
+/* Toggle groups styling */
 .toggle-group,
 .toggles {
     display: flex;
-    justify-content: space-between; /* Spreads items horizontally */
-    align-items: center; /* Centers items vertically */
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 15px;
-    width: 100%; /* Ensures toggles span full width of their parent */
-    padding: 0 5px; /* Small horizontal padding to keep them off the edge */
-    box-sizing: border-box; /* Include padding in the width calculation */
+    width: 100%;
+    padding: 0 5px;
 }
 
-/* Styling for the custom switch component */
+.toggle-group span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+/* Custom switch styling */
 .switch {
     position: relative;
     display: inline-block;
@@ -173,19 +153,23 @@ body.dark-theme {
 }
 
 .switch input {
-    opacity: 0; /* Hide the default checkbox */
+    opacity: 0;
     width: 0;
     height: 0;
+    position: absolute;
 }
 
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0;
-    right: 0; bottom: 0;
-    background-color: rgba(255, 255, 255, 0.3); /* Background of the slider track */
-    transition: 0.4s;
-    border-radius: 24px; /* Makes the slider rounded */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    transition: var(--transition);
+    border-radius: 24px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .slider:before {
@@ -195,119 +179,405 @@ body.dark-theme {
     width: 18px;
     left: 3px;
     bottom: 3px;
-    background-color: white; /* Color of the toggle "thumb" */
-    transition: 0.4s;
-    border-radius: 50%; /* Makes the thumb circular */
+    background-color: white;
+    transition: var(--transition);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Style when the checkbox is checked */
+.slider:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
 input:checked + .slider {
-    background-color: var(--accent-color); /* Changes track color when checked */
+    background-color: var(--accent-color);
 }
 
 input:checked + .slider:before {
-    transform: translateX(26px); /* Moves the thumb to the right when checked */
+    transform: translateX(26px);
 }
 
-/* Scientific buttons - Initial state (hidden and collapsed horizontally) */
+input:focus + .slider {
+    box-shadow: 0 0 0 2px rgba(0, 198, 255, 0.3);
+}
+
+/* Buttons wrapper */
+.buttons-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    margin: 15px 0;
+    overflow: hidden;
+}
+
+/* Simple buttons grid */
+.simple-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    flex-basis: 250px;
+    flex-shrink: 0;
+}
+
+/* Button base styles */
+.simple-buttons button,
+.scientific-buttons button {
+    padding: 15px;
+    font-size: 18px;
+    font-weight: 500;
+    background: var(--button-bg);
+    color: var(--text-color);
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Button hover and focus effects */
+.simple-buttons button:hover,
+.scientific-buttons button:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: var(--button-hover);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.simple-buttons button:active,
+.scientific-buttons button:active {
+    transform: translateY(0) scale(0.98);
+    background: var(--button-active);
+    transition: all 0.1s ease;
+}
+
+.simple-buttons button:focus,
+.scientific-buttons button:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Ripple effect for buttons */
+.simple-buttons button::after,
+.scientific-buttons button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.simple-buttons button:active::after,
+.scientific-buttons button:active::after {
+    width: 100px;
+    height: 100px;
+}
+
+/* Special button styling */
+.clear,
+.simple-buttons button[title="backspace"] {
+    background-color: var(--danger-color);
+    color: white;
+    font-weight: 600;
+}
+
+.clear:hover,
+.simple-buttons button[title="backspace"]:hover {
+    background-color: #d63384;
+    transform: translateY(-2px) scale(1.02);
+}
+
+.simple-buttons button[onclick="calculate()"] {
+    background-color: var(--accent-color);
+    color: white;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.simple-buttons button[onclick="calculate()"]:hover {
+    background-color: #0099cc;
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Operator buttons styling */
+.simple-buttons button[onclick*="'+'"],
+.simple-buttons button[onclick*="'-'"],
+.simple-buttons button[onclick*="'*'"],
+.simple-buttons button[onclick*="'/'"] {
+    background-color: var(--success-color);
+    color: white;
+    font-weight: 600;
+}
+
+.simple-buttons button[onclick*="'+'"]:hover,
+.simple-buttons button[onclick*="'-'"]:hover,
+.simple-buttons button[onclick*="'*'"]:hover,
+.simple-buttons button[onclick*="'/'"]:hover {
+    background-color: #236946;
+}
+
+/* Scientific buttons */
 .scientific-buttons {
-    display: grid; /* Always a grid, even when hidden, just collapsed */
-    grid-template-columns: repeat(3, 1fr); /* 3 columns for scientific buttons */
-    gap: 10px; /* Space between scientific buttons */
-
-    opacity: 0; /* Makes them transparent */
-    max-width: 0; /* Collapses them horizontally to 0 width */
-    overflow: hidden; /* Hides content that would otherwise overflow during collapse */
-    transform: translateX(-20px); /* Starts them slightly off-screen to the left for animation */
-
-    /* Transitions for smooth horizontal movement and fading */
-    transition: opacity 0.4s ease, max-width 0.4s ease, transform 0.4s ease;
-
-    flex-grow: 0; /* Prevents them from growing when hidden */
-    flex-shrink: 0; /* Prevents them from shrinking excessively when hidden */
-    flex-basis: auto; /* Default flex-basis */
-
-    /* Optional: Add background/padding if you want the scientific pad visually distinct */
-    /* background: var(--button-bg); */
-    /* border-radius: 12px; */
-    /* padding: 15px; */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    transform: translateX(-20px);
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-grow: 0;
+    flex-shrink: 0;
 }
 
-/* Scientific buttons - Visible state (expands horizontally) */
 .scientific-buttons.show {
-    opacity: 1; /* Fully visible */
-    max-width: 250px; /* Expands to a max width suitable for 3 columns (adjust as needed) */
-    transform: translateX(0); /* Moves them into view */
-    flex-grow: 1; /* Allows them to grow and take available space when shown */
-    flex-shrink: 1; /* Allows them to shrink if needed when shown */
+    opacity: 1;
+    max-width: 280px;
+    transform: translateX(0);
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 
-/* History section styling */
+.scientific-buttons button {
+    font-size: 16px;
+    padding: 12px 8px;
+    background: linear-gradient(145deg, var(--button-bg), rgba(255, 255, 255, 0.1));
+}
+
+/* Scientific function buttons special styling */
+.scientific-buttons button[onclick*="scientificFunc"] {
+    background: linear-gradient(145deg, var(--accent-color), #0099cc);
+    color: white;
+    font-weight: 600;
+}
+
+.scientific-buttons button[onclick*="scientificFunc"]:hover {
+    background: linear-gradient(145deg, #0099cc, var(--accent-color));
+}
+
+/* History section */
 .history {
     margin-top: 20px;
     padding: 15px;
     background: var(--button-bg);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     color: var(--text-color);
     font-size: 14px;
-    width: 100%; /* Ensures history takes full width of its parent */
+    width: 100%;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+}
+
+.history:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .history h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.history button {
+    padding: 8px 16px;
+    font-size: 12px;
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
     margin-bottom: 10px;
 }
 
-/* History list styling */
+.history button:hover {
+    background: #d63384;
+    transform: translateY(-1px);
+}
+
+/* History list */
 #history-list {
-    list-style: none; /* Removes bullet points */
+    list-style: none;
     padding: 0;
-    max-height: 150px; /* Limits height, enables scrolling */
-    overflow-y: auto; /* Adds scrollbar if content overflows vertically */
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) transparent;
 }
 
-/* Individual history item styling */
+#history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#history-list::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+#history-list::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+}
+
+#history-list::-webkit-scrollbar-thumb:hover {
+    background: #0099cc;
+}
+
 #history-list li {
-    padding: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Separator between items */
-    cursor: pointer; /* Indicates it's clickable */
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: 'Segoe UI', monospace;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive adjustments for smaller screens (max-width: 500px) */
-@media (max-width: 500px) {
-    /* Adjust container width for smaller screens when scientific mode is on */
+#history-list li:hover {
+    background: var(--button-hover);
+    transform: translateX(4px);
+    border-color: var(--accent-color);
+}
+
+#history-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
     .calculator-container.show-scientific-mode {
-        max-width: 90vw; /* Use viewport width to be more adaptable */
+        max-width: 95vw;
     }
-    /* Stack simple and scientific buttons vertically on small screens */
+    
     .buttons-wrapper {
-        flex-direction: column; /* Change to column layout */
-        gap: 10px; /* Adjust gap */
+        flex-direction: column;
+        gap: 15px;
     }
-    /* Ensure both button sections take full width when stacked vertically */
+    
     .simple-buttons,
     .scientific-buttons {
-        flex-basis: auto; /* Remove fixed flex-basis */
-        width: 100%; /* Take full width */
-        max-width: none; /* Remove max-width constraint */
-        opacity: 1; /* Ensure visible (no fading effect if stacked) */
-        transform: none; /* Remove transform (no sliding effect if stacked) */
+        flex-basis: auto;
+        width: 100%;
+        max-width: none;
     }
-    /* Remove max-width constraint specifically for scientific buttons in show state */
+    
+    .scientific-buttons {
+        opacity: 1;
+        transform: none;
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
     .scientific-buttons.show {
-         max-width: none;
+        max-width: none;
     }
+}
 
-    /* Adjust button sizes for smaller screens */
+@media (max-width: 500px) {
+    body {
+        padding: 10px;
+    }
+    
+    .calculator-container {
+        padding: 20px 15px;
+    }
+    
     .simple-buttons button,
     .scientific-buttons button {
-        flex: 1 0 21%; /* Adjust flex-basis for smaller buttons */
         font-size: 16px;
-        padding: 12px;
+        padding: 12px 8px;
     }
-
-    /* Adjust display font size for smaller screens */
+    
     #display {
-        font-size: 22px;
+        font-size: 24px;
         padding: 15px;
     }
+    
+    .toggle-group span {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .simple-buttons {
+        gap: 8px;
+    }
+    
+    .scientific-buttons {
+        gap: 8px;
+    }
+    
+    .simple-buttons button,
+    .scientific-buttons button {
+        font-size: 14px;
+        padding: 10px 6px;
+    }
+    
+    #display {
+        font-size: 20px;
+        padding: 12px;
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-color: #e8e8e8;
+    }
+}
+
+/* Focus management for keyboard navigation */
+.calculator-container:focus-within {
+    box-shadow: 0 0 0 3px rgba(0, 198, 255, 0.3);
+}
+
+/* Loading state (optional) */
+.calculator-container.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.calculator-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--accent-color);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
